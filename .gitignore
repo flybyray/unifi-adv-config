@@ -1,0 +1,4 @@
+put/*/config.gateway.json*
+get/*/usg-config.yaml*
+vault_password
+debug.yml

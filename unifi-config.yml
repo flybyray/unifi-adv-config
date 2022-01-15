@@ -1,0 +1,57 @@
+---
+- name: get config json
+  hosts: usg
+  gather_facts: False
+  tasks:
+    - raw: mca-ctrl -t dump-cfg
+      register: dumpcfg
+      changed_when: False
+      check_mode: no
+    - local_action:
+        module: file
+        path: "get/{{inventory_hostname}}"
+        state: directory
+      check_mode: no
+    - local_action:
+        module: copy
+        backup: True
+        content: |
+          {{dumpcfg.stdout|from_json|to_nice_yaml}}
+        dest: "get/{{inventory_hostname}}/usg-config.yaml"
+
+- name: put config gateway json
+  hosts: uck
+  gather_facts: False
+  vars_files:
+    - config_gateway_json.yml
+  tasks:
+    - block:
+        - local_action:
+            module: file
+            path: "put/{{inventory_hostname}}"
+            state: directory
+          check_mode: no
+        - local_action:
+            module: copy
+            backup: True
+            content: |
+              {{config_gateway_json[inventory_hostname]|to_nice_json}}
+            dest: "put/{{inventory_hostname}}/config.gateway.json"
+          check_mode: no
+          register: copied_to_nice_json
+    - when: copied_to_nice_json.changed
+      block:
+        - file:
+            path: "{{site}}"
+            state: directory
+            owner: unifi
+            group: unifi
+            mode: "0770"
+        - copy:
+            src: "put/{{inventory_hostname}}/config.gateway.json"
+            dest: "{{site}}/config.gateway.json"
+            owner: unifi
+            group: unifi
+            mode: "0660"
+      vars:
+        site: "{{sitepath[inventory_hostname] if sitepath[inventory_hostname]|default(false) else '/srv/unifi/data/sites/default'}}"
