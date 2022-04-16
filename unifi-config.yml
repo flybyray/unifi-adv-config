@@ -18,6 +18,7 @@
         content: |
           {{dumpcfg.stdout|from_json|to_nice_yaml}}
         dest: "get/{{inventory_hostname}}/usg-config.yaml"
+      check_mode: no
 
 - name: put config gateway json
   hosts: uck
@@ -40,6 +41,7 @@
           check_mode: no
           register: copied_to_nice_json
     - when: copied_to_nice_json.changed
+      become: true
       block:
         - file:
             path: "{{site}}"

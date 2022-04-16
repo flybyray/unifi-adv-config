@@ -1,0 +1,40 @@
+--- a/usr/sbin/ddclient	2022-04-16 19:56:55.250417626 +0200
++++ b/usr/sbin/ddclient	2022-04-16 19:57:06.195430775 +0200
+@@ -2172,7 +2172,7 @@
+ 
+     } elsif ($use eq 'if') {
+ 	$skip  = opt('if-skip', $h)  || '';
+-	$reply = `ip -6 addr list dev "$arg" scope global -tentative -deprecated  -dadfailed | grep inet6 | grep -v temporary | grep -v "inet6 f[cd]" 2> /dev/null`;
++	$reply = `ip -6 addr list dev "$arg" scope global | grep inet6 | grep -v temporary | grep -v "inet6 f[cd]" 2> /dev/null`;
+ 	$reply = '' if $?;
+     }
+     if (!defined $reply) {
+@@ -2182,7 +2182,7 @@
+ 	$skip  =~ s/ /\\s/is;
+     	$reply =~ s/^.*?${skip}//is;
+     }
+-    if ($reply =~ /.*? ([0-9:][^\/]*)/i) {
++    if ($reply =~ /.*? ([0-9a-f:][^\/]*)/i) {
+ 	$ip = $1;
+     }
+     if (($use ne 'ip') && (define($ip,'') eq '0.0.0.0')) {
+@@ -2617,9 +2617,18 @@
+ 	    $url .= 'dyndns';
+ 	}
+ 
++	my $ipv6 = 0;
++	my $use = '';
++	$ipv6 = 1 if (defined $config{$h}{'usev6'});
++	if ($ipv6) {
++		$use = opt('usev6', $h);
++	}
++
+ 	$url  .= "&hostname=$hosts";
+ 	$url  .= "&myip=";
+-	$url  .= $ip            if $ip;
++	$url  .= get_ip($use, $h);        ;
++	$url  .= "&myipv6=" if $ipv6;
++	$url  .= $ip        if $ip;
+ 
+ 	## some args are not valid for a custom domain.
+ 	$url  .= "&wildcard=ON" if ynu($config{$h}{'wildcard'}, 1, 0, 0);

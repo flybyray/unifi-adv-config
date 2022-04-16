@@ -1,0 +1,12 @@
+---
+# maybe requires to install ion USG3 http://archive.debian.org/debian-archive/debian/pool/main/p/patch/patch_2.6.1-3_mips.deb
+- hosts: usg
+  gather_facts: False
+  tasks:
+    - name: Patch ddclient
+      become: true
+      ansible.posix.patch:
+        backup: yes
+        src: ddclient.patch
+        basedir: /
+        strip: 1
