@@ -1,0 +1,36 @@
+---
+
+- hosts: USG_3P
+  gather_facts: False
+  become: true
+  vars:
+    debian_repo: http://archive.debian.org/debian-archive/debian/
+    debs:
+    # requirement for ansible apt first
+      - url: "{{ debian_repo }}pool/main/a/apt/libapt-inst1.5_0.9.7.9+deb7u7_mips.deb"
+        checksum: sha256:918f99b5144f783d8b5c6ea0c8fb7955913bf55218701f3c6da424efa3aa62f1
+      - url: "{{ debian_repo }}pool/main/p/python-apt/python-apt-common_0.8.8.2_all.deb"
+        checksum: sha256:9182c1b7de6408088e801db5e44d8635cf40a2f6443965d900383d903c14cf96
+      - url: "{{ debian_repo }}pool/main/p/python-apt/python-apt_0.8.8.2_mips.deb"
+        checksum: sha256:0786b2ff57cce7a68f0565c7509ead4889601a8cbadbb9ec15b1a7b91d7ffa8d
+      - url: "{{ debian_repo }}pool/main/p/patch/patch_2.6.1-3_mips.deb"
+        checksum: sha256:89ba2874d0dfb40b1b1b4e9775bd299bef37f636a52f2f3bb7c435eaa2b7f991
+      - url: https://github.com/WireGuard/wireguard-vyatta-ubnt/releases/download/1.0.20211208-1/ugw3-v1-v1.0.20211208-v1.0.20210914.deb
+        checksum: sha256:854987d0689872a84326cc0c482665ee15f4aa0b564c5474cc5384510c1d5dda
+
+  tasks:
+    - get_url:
+        url: "{{ item.url }}"
+        dest: "/config/scripts/{{ item.url|basename }}"
+        checksum: "{{ item.checksum }}"
+      loop: "{{ debs }}"
+    - command: "dpkg -i /config/scripts/{{ debs[0].url|basename }}"
+      changed_when: False
+    - command: "dpkg -i /config/scripts/{{ debs[1].url|basename }}"
+      changed_when: False
+    - command: "dpkg -i /config/scripts/{{ debs[2].url|basename }}"
+      changed_when: False
+    - apt:
+        only_upgrade: true
+        deb: "/config/scripts/{{ item.url|basename }}"
+      loop: "{{ debs }}"

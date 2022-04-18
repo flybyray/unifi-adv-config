@@ -45,8 +45,8 @@ IFS= read -rsp 'Ansible Vault Password: ' password < /dev/tty &&
     * `ansible-vault edit hosts`
     * example:
       ```ini
-      [usg]
-      usg-3p ansible_user=username ansible_password=password
+      [USG_3P]
+      USG-3P ansible_user=username ansible_password=password
       [uck]
       unifi-cloudkey ansible_user=username ansible_password=password
       ```

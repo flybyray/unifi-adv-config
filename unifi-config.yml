@@ -1,6 +1,6 @@
 ---
 - name: get config json
-  hosts: usg
+  hosts: USG_3P
   gather_facts: False
   tasks:
     - raw: mca-ctrl -t dump-cfg
@@ -17,11 +17,11 @@
         backup: True
         content: |
           {{dumpcfg.stdout|from_json|to_nice_yaml}}
-        dest: "get/{{inventory_hostname}}/usg-config.yaml"
+        dest: "get/{{inventory_hostname}}/config.yaml"
       check_mode: no
 
 - name: put config gateway json
-  hosts: uck
+  hosts: UCK_3V
   gather_facts: False
   vars_files:
     - config_gateway_json.yml
@@ -36,7 +36,7 @@
             module: copy
             backup: True
             content: |
-              {{config_gateway_json[inventory_hostname]|to_nice_json}}
+              {{ config_gateway_json[inventory_hostname] | to_nice_json }}
             dest: "put/{{inventory_hostname}}/config.gateway.json"
           check_mode: no
           register: copied_to_nice_json
